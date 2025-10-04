@@ -22,6 +22,7 @@ const menuItems: MenuItem[] = [
   { label: "Project", ariaLabel: "Our projects", link: "/project" },
   { label: "Contact Us", ariaLabel: "Get in touch", link: "/contact" },
   { label: "Blog", ariaLabel: "Read our blog", link: "/blog" },
+  { label: " Our Team", ariaLabel: "Read our blog", link: "/team" },
   { label: "Login", ariaLabel: "Login to account", link: "/login" },
 ];
 
