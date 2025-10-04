@@ -13,8 +13,7 @@ type Slide = {
   id: string;
   title: string;
   subtitle: string;
-  ctaText: string;
-  ctaHref: string;
+
   image: string;
 };
 
@@ -23,24 +22,20 @@ const defaultSlides: Slide[] = [
     id: "1",
     title: "Modern Luxury Living",
     subtitle: "Exceptional homes crafted for inspired living.",
-    ctaText: "Explore Projects",
-    ctaHref: "#projects",
+
     image: "/images/banner1.jpg",
   },
   {
     id: "2",
     title: "Design that Inspires",
     subtitle: "Architecture & interiors that speak quality.",
-    ctaText: "View Residences",
-    ctaHref: "#residences",
+
     image: "/images/banner2.jpg",
   },
   {
     id: "3",
     title: "Investment Opportunities",
     subtitle: "Smart investments in prime locations.",
-    ctaText: "Get in Touch",
-    ctaHref: "#contact",
     image: "/images/banner3.jpg",
   },
 ];
@@ -167,20 +162,12 @@ export default function BannerWithSearch() {
           <div className="mt-6 text-center">
             <button
               onClick={handleSearch}
-              className="px-10 py-4 bg-gradient-to-r from-[#A4CC40] to-[#7AB800] text-white font-bold rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300"
+              className="px-10 py-4 bg-gradient-to-r from-[#164C36] to-[#A4CC36] text-white font-bold rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300"
             >
               Search Properties
             </button>
           </div>
         </div>
-
-        {/* CTA button */}
-        <a
-          href={slide.ctaHref}
-          className="mt-8 px-8 py-4 bg-white text-gray-900 rounded-full font-semibold shadow hover:shadow-lg hover:scale-105 transition-transform duration-300"
-        >
-          {slide.ctaText}
-        </a>
       </div>
 
       {/* Dots */}
