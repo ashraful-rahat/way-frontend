@@ -2,6 +2,7 @@
 import { gsap } from "gsap";
 import { Menu, Phone, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 interface MenuItem {
@@ -12,14 +13,14 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
-  { label: "About", ariaLabel: "Learn about us", link: "/about" },
+  { label: "About Us", ariaLabel: "Learn about us", link: "/about" },
   {
     label: "Way Housing",
     ariaLabel: "Way Housing project",
     link: "/way-housing",
   },
   { label: "Project", ariaLabel: "Our projects", link: "/project" },
-  { label: "Contact", ariaLabel: "Get in touch", link: "/contact" },
+  { label: "Contact Us", ariaLabel: "Get in touch", link: "/contact" },
   { label: "Blog", ariaLabel: "Read our blog", link: "/blog" },
   { label: "Login", ariaLabel: "Login to account", link: "/login" },
 ];
@@ -58,9 +59,9 @@ const Navbar = () => {
         )
         .fromTo(
           menuItemsRef.current,
-          { y: 20, opacity: 0 }, // পরিবর্তিত: x এর পরিবর্তে y ব্যবহার করা হয়েছে
+          { y: 20, opacity: 0 },
           {
-            y: 0, // পরিবর্তিত: x এর পরিবর্তে y ব্যবহার করা হয়েছে
+            y: 0,
             opacity: 1,
             duration: 0.5,
             stagger: 0.08,
@@ -110,7 +111,7 @@ const Navbar = () => {
         className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md border-b border-gray-200/20 z-50 shadow-sm"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image
               src="/images/logo.png"
               alt="Company Logo"
@@ -118,12 +119,12 @@ const Navbar = () => {
               height={40}
               className="object-contain"
             />
-          </div>
+          </Link>
 
           <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-2 text-gray-700">
               <Phone size={23} className="text-primary" />
-              <span className="font-medium text-md">+1 (555) 123-4567</span>
+              <span className="font-medium text-md">+88 01407-100300</span>
             </div>
             <button
               onClick={toggleDrawer}
@@ -193,7 +194,7 @@ const Navbar = () => {
                 <Phone size={18} className="text-primary" />
                 <div>
                   <p className="text-sm font-medium">Call us</p>
-                  <p className="text-sm">+1 (555) 123-4567</p>
+                  <p className="text-sm">+8801407100300</p>
                 </div>
               </div>
             </div>
