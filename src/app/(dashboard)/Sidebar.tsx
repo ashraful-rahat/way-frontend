@@ -7,6 +7,7 @@ import {
   Home,
   Layers,
   MapPin,
+  Newspaper,
   Users,
 } from "lucide-react";
 import Image from "next/image";
@@ -22,7 +23,9 @@ const Sidebar = () => {
     { href: "/dashboard/projects", label: "Projects", icon: Building },
     { href: "/dashboard/flats", label: "Flats", icon: Layers },
     { href: "/dashboard/team", label: "Team", icon: Users },
+        { href: "/dashboard/service", label: "Service", icon: Users },
     { href: "/dashboard/property", label: "Property", icon: Layers },
+       { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
   ];
 
   return (
