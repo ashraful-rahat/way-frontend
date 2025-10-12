@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axiosInstance from "@/utils/axios";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { 
   MapPin, 
   Clock, 
@@ -64,7 +64,7 @@ export default function ProjectsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -74,7 +74,7 @@ export default function ProjectsPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants : Variants= {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
@@ -177,7 +177,7 @@ export default function ProjectsPage() {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">No Projects Found</h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Try adjusting your search criteria or filter to find what you're looking for.
+              Try adjusting your search criteria or filter to find what you&lsquo;re looking for.
             </p>
           </motion.div>
         ) : (
@@ -316,7 +316,7 @@ export default function ProjectsPage() {
               Ready to Start Your Project?
             </h2>
             <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-              Let's collaborate to bring your vision to life with our expertise in real estate development.
+              Let&lsquo;s collaborate to bring your vision to life with our expertise in real estate development.
             </p>
             <motion.button
               className="px-8 py-4 bg-white text-[#164C36] rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300"

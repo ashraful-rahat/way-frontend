@@ -82,7 +82,7 @@ export default function SingleProjectPage() {
             <Home className="w-16 h-16 text-gray-400" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">Project Not Found</h3>
-          <p className="text-gray-600 mb-6">The project you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-6">The project you&lsquo;re looking for doesn&lsquo;t exist.</p>
           <Link href="/projects" className="px-6 py-3 bg-[#164C36] text-white rounded-xl font-semibold hover:bg-[#A4CC36] transition-colors duration-300">
             Back to Projects
           </Link>

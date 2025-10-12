@@ -37,6 +37,7 @@ const ServicePage = () => {
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("");
   const [featuresInput, setFeaturesInput] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [features, setFeatures] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [order, setOrder] = useState(0);

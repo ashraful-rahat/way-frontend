@@ -41,7 +41,9 @@ const ContactUs = () => {
 
   // Map integration with Google Maps
   const MapSection = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const headOfficeCoords = "23.763732,90.364804"; // Dhaka coordinates
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const corporateOfficeCoords = "23.746466,90.376015"; // Dhanmondi coordinates
 
     return (
@@ -113,7 +115,7 @@ const ContactUs = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              Let's Build Your
+              Let&lsquo;s Build Your
               <span className="block bg-gradient-to-r from-[#164C36] to-[#A4CC36] bg-clip-text text-transparent">
                 Dream Together
               </span>
@@ -124,7 +126,7 @@ const ContactUs = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Transforming Bangladesh's real estate landscape with world-class
+              Transforming Bangladesh&lsquo;s real estate landscape with world-class
               standards and innovative apartment solutions tailored for your
               community.
             </motion.p>
@@ -327,7 +329,7 @@ const ContactUs = () => {
                         Send Message
                       </h2>
                       <p className="text-gray-600">
-                        We'll get back to you within 24 hours
+                        We&#39;ll get back to you within 24 hours
                       </p>
                     </div>
                   </div>

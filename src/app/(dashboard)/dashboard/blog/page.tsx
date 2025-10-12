@@ -2,7 +2,7 @@
 "use client";
 
 import axiosInstance from "@/utils/axios";
-import { Edit, Plus, Trash2, X, Eye, Calendar, User, Tag } from "lucide-react";
+import { Edit, Plus, Trash2, X, Eye, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";

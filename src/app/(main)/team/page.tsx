@@ -1,7 +1,7 @@
 "use client";
 
 import axiosInstance from "@/utils/axios";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Award,
   Linkedin,
@@ -40,6 +40,7 @@ const TeamPage = () => {
       const res = await axiosInstance.get<EmployeeApiResponse>("/employees");
       console.log("✅ [DEBUG] Employee fetch:", res.data);
       setEmployees(res.data.data || []);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(
         "❌ [DEBUG] Employee fetch error:",
@@ -54,12 +55,12 @@ const TeamPage = () => {
     fetchEmployees();
   }, []);
 
-  const containerVariants = {
+  const containerVariants :Variants= {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
-  const itemVariants = {
+  const itemVariants:Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
@@ -95,7 +96,7 @@ const TeamPage = () => {
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Meet the passionate professionals dedicated to transforming
-            Bangladesh's real estate landscape with innovation, expertise, and
+            Bangladesh&lsquo;s real estate landscape with innovation, expertise, and
             commitment to excellence.
           </p>
         </motion.div>
