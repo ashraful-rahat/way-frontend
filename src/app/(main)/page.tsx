@@ -3,6 +3,7 @@ import FeaturedProjects from "./components/FeaturedProjects";
 import { FindTheProperty } from "./components/FindTheProperty";
 import OurServices from "./components/OurServices";
 import Partners from "./components/Partners";
+import HomePageReviews from "./components/Review";
 import WhyChooseUs from "./components/WhyChosseUs";
 
 export default function HomePage() {
@@ -13,6 +14,7 @@ export default function HomePage() {
       <FeaturedProjects></FeaturedProjects>
       <OurServices></OurServices>
       <WhyChooseUs></WhyChooseUs>
+      <HomePageReviews></HomePageReviews>
       <Partners></Partners>
     </div>
   );

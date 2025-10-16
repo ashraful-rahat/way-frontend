@@ -23,9 +23,11 @@ const Sidebar = () => {
     { href: "/dashboard/projects", label: "Projects", icon: Building },
     { href: "/dashboard/flats", label: "Flats", icon: Layers },
     { href: "/dashboard/team", label: "Team", icon: Users },
-        { href: "/dashboard/service", label: "Service", icon: Users },
+
     { href: "/dashboard/property", label: "Property", icon: Layers },
-       { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
+    { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
+    { href: "/dashboard/review", label: "Review", icon: Newspaper },
+    { href: "/dashboard/service", label: "Service", icon: Users },
   ];
 
   return (

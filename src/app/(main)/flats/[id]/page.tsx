@@ -4,119 +4,138 @@ import axiosInstance from "@/utils/axios";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Building,
+  Bath,
+  Bed,
   CheckCircle,
   Heart,
   Home,
   MapPin,
+  Phone,
   Share2,
-  Star,
+  Square,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-interface Project {
+interface Flat {
   _id: string;
-  cityId: string;
+  projectId: string;
   name: string;
-  description?: string;
-  location?: string;
-  isFeatured: boolean;
-  status: "ongoing" | "upcoming" | "completed";
-  mainImage?: string;
-  galleryImages?: string[];
-  amenities?: string[];
+  type: "apartment";
+  area: number;
+  rooms: number;
+  price: number;
+  floor?: number;
+  images?: string[];
+  available: boolean;
   createdAt: string;
   updatedAt: string;
+  description?: string;
+  location?: string;
+  amenities?: string[];
 }
 
-interface ProjectApiResponse {
+interface FlatApiResponse {
   success: boolean;
-  data: Project;
+  data: Flat;
 }
 
-export default function SingleProjectPage() {
-  const { id } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
+interface FlatsApiResponse {
+  success: boolean;
+  data: Flat[];
+}
+
+export default function FlatDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [flat, setFlat] = useState<Flat | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [similarFlats, setSimilarFlats] = useState<Flat[]>([]);
 
-  const fetchProject = useCallback(async () => {
-    if (!id) return;
-
+  const fetchFlat = useCallback(async () => {
     try {
-      const res = await axiosInstance.get<ProjectApiResponse>(
-        `/projects/${id}`
+      const res = await axiosInstance.get<FlatApiResponse>(
+        `/flats/${params.id}`
       );
-      setProject(res.data?.data || null);
+
+      if (res.data.success) {
+        setFlat(res.data.data);
+
+        if (res.data.data.projectId) {
+          const similarRes = await axiosInstance.get<FlatsApiResponse>(
+            `/flats?projectId=${res.data.data.projectId}&limit=3`
+          );
+          if (similarRes.data.success) {
+            setSimilarFlats(similarRes.data.data || []);
+          }
+        }
+      } else {
+        throw new Error("Failed to fetch flat");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error(
-        "Single Project fetch error:",
-        error.response?.data || error.message
-      );
+      console.error("Flat fetch error:", error.response?.data || error.message);
+      router.push("/flats");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [params.id, router]);
 
   useEffect(() => {
-    fetchProject();
-  }, [fetchProject]);
+    if (params.id) {
+      fetchFlat();
+    }
+  }, [params.id, fetchFlat]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 flex justify-center items-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#164C36] mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">
-            Loading project details...
-          </p>
+          <p className="text-gray-600 font-medium">Loading flat details...</p>
         </div>
       </div>
     );
   }
 
-  if (!project) {
+  if (!flat) {
     return (
-      <div className="min-h-screen  bg-gradient-to-br from-gray-50 to-green-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 flex justify-center items-center">
         <div className="text-center">
-          <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Home className="w-16 h-16 text-gray-400" />
+          <div className="w-32 h-32 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-4xl">❌</span>
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            Project Not Found
+            Flat Not Found
           </h3>
           <p className="text-gray-600 mb-6">
-            The project you&lsquo;re looking for doesn&lsquo;t exist.
+            The flat you&apos;re looking for doesn&apos;t exist.
           </p>
-          <Link
-            href="/projects"
-            className="px-6 py-3 bg-[#164C36] text-white rounded-xl font-semibold hover:bg-[#A4CC36] transition-colors duration-300"
+          <button
+            onClick={() => router.push("/flats")}
+            className="px-6 py-3 bg-[#164C36] text-white rounded-xl font-semibold hover:bg-[#133928] transition-colors"
           >
-            Back to Projects
-          </Link>
+            Back to Flats
+          </button>
         </div>
       </div>
     );
   }
 
-  const allImages = [
-    project.mainImage,
-    ...(project.galleryImages || []),
-  ].filter(Boolean) as string[];
+  const allImages = flat.images || [];
 
   return (
-    <div className="min-h-screen mt-24 bg-white">
+    <div className="min-h-screen bg-white mt-24">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-green-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-40"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#A4CC36] rounded-full translate-x-1/3 translate-y-1/3 opacity-10"></div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        {/* Navigation */}
+        {/* Navigation - Project page style */}
         <motion.div
           className="flex items-center justify-between mb-8"
           initial={{ opacity: 0, y: -20 }}
@@ -124,11 +143,11 @@ export default function SingleProjectPage() {
           transition={{ duration: 0.6 }}
         >
           <Link
-            href="/projects"
+            href="/flats"
             className="flex items-center gap-2 text-gray-600 hover:text-[#164C36] transition-colors duration-300"
           >
             <ArrowLeft size={20} />
-            <span className="font-semibold">Back to Projects</span>
+            <span className="font-semibold">Back to Flats</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -168,7 +187,7 @@ export default function SingleProjectPage() {
               {allImages[selectedImage] ? (
                 <Image
                   src={allImages[selectedImage]}
-                  alt={project.name}
+                  alt={flat.name}
                   fill
                   className="object-cover"
                   priority
@@ -176,11 +195,25 @@ export default function SingleProjectPage() {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                   <div className="text-center">
-                    <Building className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500 font-medium">Project Image</p>
+                    <Home className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500 font-medium">Flat Image</p>
                   </div>
                 </div>
               )}
+
+              {/* Badges */}
+              <div className="absolute top-4 left-4 flex gap-2">
+                <span
+                  className={`px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-lg ${
+                    flat.available ? "bg-green-500" : "bg-red-500"
+                  }`}
+                >
+                  {flat.available ? "Available" : "Sold Out"}
+                </span>
+                <span className="px-3 py-1.5 bg-[#A4CC36] rounded-full text-white text-xs font-bold shadow-lg capitalize">
+                  {flat.type}
+                </span>
+              </div>
 
               {/* Image Navigation */}
               {allImages.length > 1 && (
@@ -230,7 +263,7 @@ export default function SingleProjectPage() {
             )}
           </motion.div>
 
-          {/* Project Details */}
+          {/* Flat Details */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -240,72 +273,97 @@ export default function SingleProjectPage() {
             {/* Header */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                {project.isFeatured && (
-                  <span className="px-3 py-1 bg-[#A4CC36] rounded-full text-white text-sm font-bold flex items-center gap-1">
-                    <Star size={14} className="fill-current" />
-                    Featured
-                  </span>
-                )}
                 <span
                   className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
-                    project.status === "completed"
-                      ? "bg-green-500"
-                      : project.status === "ongoing"
-                      ? "bg-blue-500"
-                      : "bg-yellow-500"
+                    flat.available ? "bg-green-500" : "bg-red-500"
                   }`}
                 >
-                  {project.status}
+                  {flat.available ? "Available" : "Sold Out"}
+                </span>
+                <span className="px-3 py-1 bg-[#A4CC36] rounded-full text-white text-sm font-bold capitalize">
+                  {flat.type}
                 </span>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">
-                {project.name}
+                {flat.name}
               </h1>
 
-              {project.location && (
+              {flat.location && (
                 <div className="flex items-center gap-2 text-gray-600 mb-6">
                   <MapPin size={20} className="text-[#A4CC36]" />
-                  <span className="text-lg font-medium">
-                    {project.location}
-                  </span>
+                  <span className="text-lg font-medium">{flat.location}</span>
                 </div>
               )}
+
+              <p className="text-4xl font-black text-[#164C36] mb-6">
+                ${flat.price.toLocaleString()}
+              </p>
             </div>
 
             {/* Description */}
-            {project.description && (
+            {flat.description && (
               <div className="prose prose-lg max-w-none">
                 <p className="text-gray-700 leading-relaxed text-lg">
-                  {project.description}
+                  {flat.description}
                 </p>
               </div>
             )}
 
-            {/* Key Features */}
+            {/* Specifications */}
             <div className="grid grid-cols-2 gap-4 py-6">
               <div className="text-center p-4 bg-green-50 rounded-2xl">
+                <Square className="w-8 h-8 text-[#164C36] mx-auto mb-2" />
                 <div className="text-2xl font-black text-[#164C36] mb-1">
-                  100+
+                  {flat.area} sq.ft
                 </div>
-                <div className="text-gray-600 text-sm">Units Available</div>
+                <div className="text-gray-600 text-sm">Total Area</div>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-2xl">
+                <Bed className="w-8 h-8 text-blue-600 mx-auto mb-2" />
                 <div className="text-2xl font-black text-blue-600 mb-1">
-                  24/7
+                  {flat.rooms}
                 </div>
-                <div className="text-gray-600 text-sm">Security</div>
+                <div className="text-gray-600 text-sm">Bedrooms</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-2xl">
+                <Bath className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+                <div className="text-2xl font-black text-yellow-600 mb-1">
+                  {flat.rooms}
+                </div>
+                <div className="text-gray-600 text-sm">Bathrooms</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-2xl">
+                <Home className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                <div className="text-2xl font-black text-purple-600 mb-1">
+                  {flat.floor || "N/A"}
+                </div>
+                <div className="text-gray-600 text-sm">Floor</div>
               </div>
             </div>
 
             {/* Amenities */}
-            {project.amenities && project.amenities.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Amenities & Features
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {project.amenities.map((amenity, index) => (
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Amenities & Features
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  "Swimming Pool",
+                  "Gym",
+                  "Parking",
+                  "Security",
+                  "Garden",
+                  "Elevator",
+                  "AC",
+                  "WiFi",
+                  "Balcony",
+                  "Laundry",
+                  "Maintenance",
+                  "CCTV",
+                ]
+                  .slice(0, 8)
+                  .map((amenity, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: 20 }}
@@ -322,32 +380,37 @@ export default function SingleProjectPage() {
                       </span>
                     </motion.div>
                   ))}
-                </div>
               </div>
-            )}
+            </div>
 
             {/* CTA Buttons */}
             <div className="flex gap-4 pt-6">
               <motion.button
-                className="flex-1 bg-gradient-to-r from-[#164C36] to-[#A4CC36] text-white py-4 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${
+                  flat.available
+                    ? "bg-gradient-to-r from-[#164C36] to-[#A4CC36] text-white hover:shadow-2xl"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                whileHover={flat.available ? { scale: 1.02 } : {}}
+                whileTap={flat.available ? { scale: 0.98 } : {}}
+                disabled={!flat.available}
               >
-                Schedule Site Visit
+                {flat.available ? "Schedule Viewing" : "Not Available"}
               </motion.button>
               <motion.button
-                className="px-8 py-4 border-2 border-[#164C36] text-[#164C36] rounded-2xl font-bold hover:bg-[#164C36] hover:text-white transition-all duration-300"
+                className="px-8 py-4 border-2 border-[#164C36] text-[#164C36] rounded-2xl font-bold hover:bg-[#164C36] hover:text-white transition-all duration-300 flex items-center gap-2"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Download Brochure
+                <Phone size={20} />
+                Contact Agent
               </motion.button>
             </div>
           </motion.div>
         </div>
 
-        {/* Additional Gallery Section */}
-        {project.galleryImages && project.galleryImages.length > 0 && (
+        {/* Similar Flats Section */}
+        {similarFlats.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -355,28 +418,61 @@ export default function SingleProjectPage() {
             className="mb-16"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              Project Gallery
+              Similar Flats
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {project.galleryImages.map((image, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  className="relative h-48 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-                >
-                  <Image
-                    src={image}
-                    alt={`Gallery ${index + 1}`}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-700"
-                  />
-                </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {similarFlats.map((similarFlat) => (
+                <Link key={similarFlat._id} href={`/flats/${similarFlat._id}`}>
+                  <motion.div
+                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100"
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="relative h-48">
+                      {similarFlat.images && similarFlat.images.length > 0 ? (
+                        <Image
+                          src={similarFlat.images[0]}
+                          alt={similarFlat.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <Home className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-bold text-white ${
+                            similarFlat.available
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        >
+                          {similarFlat.available ? "Available" : "Sold"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        {similarFlat.name}
+                      </h3>
+                      <p className="text-[#164C36] font-bold text-lg mb-2">
+                        ${similarFlat.price.toLocaleString()}
+                      </p>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{similarFlat.area} sq.ft</span>
+                        <span>{similarFlat.rooms} rooms</span>
+                        <span>Floor {similarFlat.floor}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           </motion.section>
         )}
 
-        {/* Related Projects CTA */}
+        {/* CTA Section */}
         <motion.section
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -384,11 +480,11 @@ export default function SingleProjectPage() {
           className="bg-gradient-to-r from-[#164C36] to-[#A4CC36] rounded-3xl p-12 text-white text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Interested in This Project?
+            Interested in This Flat?
           </h2>
           <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-            Contact our sales team today to get detailed information, pricing,
-            and availability for this exceptional development.
+            Contact our sales team today to get detailed information, schedule a
+            site visit, and make this flat your new home.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
@@ -403,7 +499,7 @@ export default function SingleProjectPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              View Similar Projects
+              View Similar Flats
             </motion.button>
           </div>
         </motion.section>

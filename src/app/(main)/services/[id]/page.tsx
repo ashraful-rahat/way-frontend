@@ -4,68 +4,119 @@ import axiosInstance from "@/utils/axios";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Building,
+  Calendar,
   CheckCircle,
+  Clock,
   Heart,
-  Home,
-  MapPin,
   Share2,
+  Shield,
   Star,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-interface Project {
+interface Service {
   _id: string;
-  cityId: string;
-  name: string;
-  description?: string;
-  location?: string;
-  isFeatured: boolean;
-  status: "ongoing" | "upcoming" | "completed";
-  mainImage?: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  icon: string;
+  image: string;
   galleryImages?: string[];
-  amenities?: string[];
+  features: string[];
+  isActive: boolean;
+  order: number;
+  metaTitle?: string;
+  metaDescription?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-interface ProjectApiResponse {
-  success: boolean;
-  data: Project;
+// ✅ Properly typed API response interfaces
+interface ServiceApiResponseSuccess {
+  status: string;
+  data: Service;
+  message?: string;
 }
 
-export default function SingleProjectPage() {
-  const { id } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
+interface ServiceApiResponseError {
+  status: string;
+  message: string;
+}
+
+type ServiceApiResponse = ServiceApiResponseSuccess | ServiceApiResponseError;
+
+// Lucide icon mapping
+const iconComponents: { [key: string]: React.ElementType } = {
+  Heart,
+  Star,
+  Users,
+  Shield,
+  Clock,
+  Calendar,
+  CheckCircle,
+};
+
+export default function ServiceDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const fetchProject = useCallback(async () => {
-    if (!id) return;
-
+  const fetchService = useCallback(async () => {
     try {
-      const res = await axiosInstance.get<ProjectApiResponse>(
-        `/projects/${id}`
+      console.log("🔄 Fetching service with ID:", params.id);
+
+      // ✅ Type assertion with proper error handling
+      const res = await axiosInstance.get<ServiceApiResponse>(
+        `/services/${params.id}`
       );
-      setProject(res.data?.data || null);
+
+      // ✅ Type guard to check response structure
+      const responseData = res.data;
+
+      console.log("📦 Full API Response:", responseData);
+
+      // ✅ Check if response has success status and data
+      if (
+        typeof responseData === "object" &&
+        responseData !== null &&
+        "status" in responseData &&
+        responseData.status === "success" &&
+        "data" in responseData
+      ) {
+        console.log("✅ Service data found:", responseData.data);
+        setService(responseData.data);
+      } else {
+        console.error("❌ Invalid response structure:", responseData);
+        throw new Error("Service not found or invalid response");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error(
-        "Single Project fetch error:",
-        error.response?.data || error.message
-      );
+      console.error("❌ Service fetch error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      router.push("/services");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [params.id, router]);
 
   useEffect(() => {
-    fetchProject();
-  }, [fetchProject]);
+    if (params.id) {
+      fetchService();
+    }
+  }, [params.id, fetchService]);
+
+  // Get icon component
+  const IconComponent = service ? iconComponents[service.icon] || Star : Star;
 
   if (loading) {
     return (
@@ -73,49 +124,51 @@ export default function SingleProjectPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#164C36] mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">
-            Loading project details...
+            Loading service details...
           </p>
+          <p className="text-gray-400 text-sm mt-2">ID: {params.id}</p>
         </div>
       </div>
     );
   }
 
-  if (!project) {
+  if (!service) {
     return (
-      <div className="min-h-screen  bg-gradient-to-br from-gray-50 to-green-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 flex justify-center items-center">
         <div className="text-center">
-          <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Home className="w-16 h-16 text-gray-400" />
+          <div className="w-32 h-32 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-4xl">❌</span>
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            Project Not Found
+            Service Not Found
           </h3>
+          <p className="text-gray-600 mb-4">ID: {params.id}</p>
           <p className="text-gray-600 mb-6">
-            The project you&lsquo;re looking for doesn&lsquo;t exist.
+            The service you&apos;re looking for doesn&apos;t exist or there was
+            an error loading it.
           </p>
-          <Link
-            href="/projects"
-            className="px-6 py-3 bg-[#164C36] text-white rounded-xl font-semibold hover:bg-[#A4CC36] transition-colors duration-300"
+          <button
+            onClick={() => router.push("/services")}
+            className="px-6 py-3 bg-[#164C36] text-white rounded-xl font-semibold hover:bg-[#133928] transition-colors"
           >
-            Back to Projects
-          </Link>
+            Back to Services
+          </button>
         </div>
       </div>
     );
   }
 
-  const allImages = [
-    project.mainImage,
-    ...(project.galleryImages || []),
-  ].filter(Boolean) as string[];
+  const allImages = [service.image, ...(service.galleryImages || [])].filter(
+    Boolean
+  ) as string[];
 
   return (
-    <div className="min-h-screen mt-24 bg-white">
+    <div className="min-h-screen bg-white">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-green-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-40"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#A4CC36] rounded-full translate-x-1/3 translate-y-1/3 opacity-10"></div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+      <div className="max-w-7xl mx-auto mt-24 px-4 py-8 relative z-10">
         {/* Navigation */}
         <motion.div
           className="flex items-center justify-between mb-8"
@@ -124,11 +177,11 @@ export default function SingleProjectPage() {
           transition={{ duration: 0.6 }}
         >
           <Link
-            href="/projects"
+            href="/services"
             className="flex items-center gap-2 text-gray-600 hover:text-[#164C36] transition-colors duration-300"
           >
             <ArrowLeft size={20} />
-            <span className="font-semibold">Back to Projects</span>
+            <span className="font-semibold">Back to Services</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -168,7 +221,7 @@ export default function SingleProjectPage() {
               {allImages[selectedImage] ? (
                 <Image
                   src={allImages[selectedImage]}
-                  alt={project.name}
+                  alt={service.title}
                   fill
                   className="object-cover"
                   priority
@@ -176,11 +229,22 @@ export default function SingleProjectPage() {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                   <div className="text-center">
-                    <Building className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500 font-medium">Project Image</p>
+                    <IconComponent className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500 font-medium">Service Image</p>
                   </div>
                 </div>
               )}
+
+              {/* Status Badge */}
+              <div className="absolute top-4 left-4">
+                <span
+                  className={`px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-lg ${
+                    service.isActive ? "bg-green-500" : "bg-gray-500"
+                  }`}
+                >
+                  {service.isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
 
               {/* Image Navigation */}
               {allImages.length > 1 && (
@@ -230,7 +294,7 @@ export default function SingleProjectPage() {
             )}
           </motion.div>
 
-          {/* Project Details */}
+          {/* Service Details */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -240,85 +304,85 @@ export default function SingleProjectPage() {
             {/* Header */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                {project.isFeatured && (
-                  <span className="px-3 py-1 bg-[#A4CC36] rounded-full text-white text-sm font-bold flex items-center gap-1">
-                    <Star size={14} className="fill-current" />
-                    Featured
-                  </span>
-                )}
                 <span
                   className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
-                    project.status === "completed"
-                      ? "bg-green-500"
-                      : project.status === "ongoing"
-                      ? "bg-blue-500"
-                      : "bg-yellow-500"
+                    service.isActive ? "bg-green-500" : "bg-gray-500"
                   }`}
                 >
-                  {project.status}
+                  {service.isActive ? "Active" : "Inactive"}
+                </span>
+                <span className="px-3 py-1 bg-[#A4CC36] rounded-full text-white text-sm font-bold flex items-center gap-1">
+                  <IconComponent size={14} className="fill-current" />
+                  Premium Service
                 </span>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">
-                {project.name}
+                {service.title}
               </h1>
 
-              {project.location && (
-                <div className="flex items-center gap-2 text-gray-600 mb-6">
-                  <MapPin size={20} className="text-[#A4CC36]" />
-                  <span className="text-lg font-medium">
-                    {project.location}
-                  </span>
-                </div>
-              )}
+              <p className="text-xl text-gray-600 mb-6 font-medium">
+                {service.shortDescription}
+              </p>
             </div>
 
             {/* Description */}
-            {project.description && (
-              <div className="prose prose-lg max-w-none">
-                <p className="text-gray-700 leading-relaxed text-lg">
-                  {project.description}
-                </p>
-              </div>
-            )}
+            <div className="prose prose-lg max-w-none">
+              <div
+                className="text-gray-700 leading-relaxed text-lg"
+                dangerouslySetInnerHTML={{ __html: service.description }}
+              />
+            </div>
 
-            {/* Key Features */}
+            {/* Key Stats */}
             <div className="grid grid-cols-2 gap-4 py-6">
               <div className="text-center p-4 bg-green-50 rounded-2xl">
                 <div className="text-2xl font-black text-[#164C36] mb-1">
                   100+
                 </div>
-                <div className="text-gray-600 text-sm">Units Available</div>
+                <div className="text-gray-600 text-sm">Projects Completed</div>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-2xl">
                 <div className="text-2xl font-black text-blue-600 mb-1">
                   24/7
                 </div>
-                <div className="text-gray-600 text-sm">Security</div>
+                <div className="text-gray-600 text-sm">Support</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-2xl">
+                <div className="text-2xl font-black text-yellow-600 mb-1">
+                  5★
+                </div>
+                <div className="text-gray-600 text-sm">Customer Rating</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-2xl">
+                <div className="text-2xl font-black text-purple-600 mb-1">
+                  10+
+                </div>
+                <div className="text-gray-600 text-sm">Years Experience</div>
               </div>
             </div>
 
-            {/* Amenities */}
-            {project.amenities && project.amenities.length > 0 && (
+            {/* Features */}
+            {service.features && service.features.length > 0 && (
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Amenities & Features
+                  Key Features
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {project.amenities.map((amenity, index) => (
+                <div className="grid grid-cols-1 gap-3">
+                  {service.features.map((feature, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300"
+                      className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300"
                     >
                       <CheckCircle
                         size={20}
                         className="text-[#A4CC36] flex-shrink-0"
                       />
                       <span className="text-gray-700 font-medium">
-                        {amenity}
+                        {feature}
                       </span>
                     </motion.div>
                   ))}
@@ -333,7 +397,7 @@ export default function SingleProjectPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Schedule Site Visit
+                Get Started Now
               </motion.button>
               <motion.button
                 className="px-8 py-4 border-2 border-[#164C36] text-[#164C36] rounded-2xl font-bold hover:bg-[#164C36] hover:text-white transition-all duration-300"
@@ -347,7 +411,7 @@ export default function SingleProjectPage() {
         </div>
 
         {/* Additional Gallery Section */}
-        {project.galleryImages && project.galleryImages.length > 0 && (
+        {service.galleryImages && service.galleryImages.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -355,10 +419,10 @@ export default function SingleProjectPage() {
             className="mb-16"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              Project Gallery
+              Service Gallery
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {project.galleryImages.map((image, index) => (
+              {service.galleryImages.map((image, index) => (
                 <motion.div
                   key={index}
                   whileHover={{ scale: 1.05 }}
@@ -376,7 +440,59 @@ export default function SingleProjectPage() {
           </motion.section>
         )}
 
-        {/* Related Projects CTA */}
+        {/* Process Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Our Process
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Users,
+                title: "Consultation",
+                description: "Understand your requirements and goals",
+              },
+              {
+                icon: Calendar,
+                title: "Planning",
+                description: "Create detailed project plan and timeline",
+              },
+              {
+                icon: Shield,
+                title: "Execution",
+                description: "Implement with quality and precision",
+              },
+              {
+                icon: CheckCircle,
+                title: "Delivery",
+                description: "Complete project with satisfaction",
+              },
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                className="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
+              >
+                <div className="w-16 h-16 bg-[#164C36] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <step.icon size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* CTA Section */}
         <motion.section
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -384,11 +500,11 @@ export default function SingleProjectPage() {
           className="bg-gradient-to-r from-[#164C36] to-[#A4CC36] rounded-3xl p-12 text-white text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Interested in This Project?
+            Ready to Get Started?
           </h2>
           <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-            Contact our sales team today to get detailed information, pricing,
-            and availability for this exceptional development.
+            Contact us today to discuss how our {service.title} service can help
+            you achieve your goals with excellence and professionalism.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
@@ -396,14 +512,14 @@ export default function SingleProjectPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Contact Sales Team
+              Contact Us Now
             </motion.button>
             <motion.button
               className="px-8 py-4 border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-[#164C36] transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              View Similar Projects
+              View All Services
             </motion.button>
           </div>
         </motion.section>
